@@ -1,3 +1,12 @@
+import { AppSidebar } from "@/components/app-sidebar";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,10 +17,17 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { authClient } from "@/lib/auth-client";
 import { trpc, trpcClient } from "@/utils/trpc";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/dashboard")({
@@ -19,14 +35,19 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 function RouteComponent() {
-  const { data: session, isPending } = authClient.useSession();
+  const { data: session, isPending: authPending } = authClient.useSession();
   const navigate = Route.useNavigate();
   const queryClient = useQueryClient();
 
   // Get user's organizations
-  const { data: organizations, refetch: refetchOrgs } = useQuery(
-    trpc.myOrganizations.queryOptions()
-  );
+  const {
+    data: organizations,
+    isLoading: orgLoading,
+    refetch: refetchOrgs,
+  } = useQuery({
+    ...trpc.myOrganizations.queryOptions(),
+    enabled: !!session,
+  });
 
   // Create organization mutation
   const createOrgMutation = useMutation({
@@ -45,15 +66,21 @@ function RouteComponent() {
   const [orgSlug, setOrgSlug] = useState("");
 
   useEffect(() => {
-    if (!session && !isPending) {
+    if (!session && !authPending) {
       navigate({ to: "/login" });
     }
-  }, [session, isPending]);
+  }, [session, authPending, navigate]);
 
-  if (isPending) {
-    return <div>Loading...</div>;
+  // Loading state
+  if (authPending || orgLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
+  // Not authenticated
   if (!session) {
     return null;
   }
@@ -81,11 +108,14 @@ function RouteComponent() {
   };
 
   // If user has no organizations, show create organization screen
-  if (organizations?.length === 0) {
+  if (!organizations || organizations.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-muted/50">
         <Card className="w-full max-w-md">
-          <CardHeader>
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <Plus className="size-6" />
+            </div>
             <CardTitle>Welcome to your workspace!</CardTitle>
             <CardDescription>
               Create your first organization to start collaborating with your
@@ -114,7 +144,7 @@ function RouteComponent() {
                   pattern="^[a-z0-9-]+$"
                   required
                 />
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   This will be your organization's URL: /{orgSlug}
                 </p>
               </div>
@@ -127,6 +157,11 @@ function RouteComponent() {
                   ? "Creating..."
                   : "Create Organization"}
               </Button>
+              {createOrgMutation.error && (
+                <p className="text-sm text-red-500">
+                  Error: {createOrgMutation.error.message}
+                </p>
+              )}
             </form>
           </CardContent>
         </Card>
@@ -134,49 +169,160 @@ function RouteComponent() {
     );
   }
 
-  // If user has organizations, show organization selector and dashboard
+  // Main dashboard with sidebar
   return (
-    <div className="container mx-auto py-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-gray-600">Welcome back, {session.user.name}</p>
-        </div>
-        <Button onClick={() => setShowCreateForm(true)}>
-          Create New Organization
-        </Button>
-      </div>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        {/* Header */}
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator orientation="vertical" className="mr-2 h-4" />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem className="hidden md:block">
+                <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Overview</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </header>
 
-      {/* Organizations List */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {organizations?.map((org: any) => (
-          <Card
-            key={org.id}
-            className="cursor-pointer hover:shadow-md transition-shadow"
-          >
-            <CardHeader>
-              <CardTitle className="flex justify-between items-start">
-                {org.name}
-                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                  {org.role}
-                </span>
-              </CardTitle>
-              <CardDescription>
-                /{org.slug} • {org.planTier} plan
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-500">
-                Joined {new Date(org.joinedAt || "").toLocaleDateString()}
+        {/* Main Content */}
+        <div className="flex flex-1 flex-col gap-4 p-4">
+          {/* Welcome Section */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+              <p className="text-muted-foreground">
+                Welcome back, {session.user.name}
               </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            </div>
+            <Button onClick={() => setShowCreateForm(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              New Organization
+            </Button>
+          </div>
 
-      {/* Create Organization Modal/Form */}
+          {/* Organizations Grid */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {organizations?.map((org: any) => (
+              <Card
+                key={org.id}
+                className="cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.02]"
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                      <span className="text-sm font-semibold">
+                        {org.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-lg truncate">
+                        {org.name}
+                      </CardTitle>
+                      <CardDescription className="flex items-center gap-2">
+                        <span>/{org.slug}</span>
+                        <span className="text-xs bg-secondary px-2 py-0.5 rounded-full">
+                          {org.role}
+                        </span>
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      {org.planTier} plan
+                    </span>
+                    <span className="text-muted-foreground">
+                      Joined {new Date(org.joinedAt || "").toLocaleDateString()}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Quick Stats */}
+          <div className="grid gap-4 md:grid-cols-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Total Organizations
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {organizations?.length || 0}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Active organizations
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Paid Plans
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {organizations?.filter((org: any) => org.planTier !== "free")
+                    .length || 0}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Pro/Enterprise plans
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Owner Roles
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {organizations?.filter((org: any) => org.role === "owner")
+                    .length || 0}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Organizations you own
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Member Roles
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {organizations?.filter((org: any) => org.role !== "owner")
+                    .length || 0}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Member/Admin roles
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </SidebarInset>
+
+      {/* Create Organization Modal */}
       {showCreateForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
           <Card className="w-full max-w-md">
             <CardHeader>
               <CardTitle>Create New Organization</CardTitle>
@@ -223,11 +369,16 @@ function RouteComponent() {
                     Cancel
                   </Button>
                 </div>
+                {createOrgMutation.error && (
+                  <p className="text-sm text-red-500">
+                    Error: {createOrgMutation.error.message}
+                  </p>
+                )}
               </form>
             </CardContent>
           </Card>
         </div>
       )}
-    </div>
+    </SidebarProvider>
   );
 }
