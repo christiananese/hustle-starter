@@ -1,4 +1,5 @@
 import PlanSelector, { type Plan } from "@/components/plan-selector";
+import { SubscriptionUsageDisplay } from "@/components/subscription-usage-display";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -232,6 +233,9 @@ function BillingPage() {
             Manage your organization's billing and subscription settings.
           </p>
         </div>
+
+        {/* Add the usage display component */}
+        <SubscriptionUsageDisplay />
 
         {/* Current Subscription Status */}
         {!isLoading && subscription && (

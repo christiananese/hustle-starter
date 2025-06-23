@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, count, desc, eq, isNull } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import {
@@ -532,6 +532,54 @@ export const appRouter = router({
       features: plan.features,
       isCustom: "isCustom" in plan ? plan.isCustom : false,
     }));
+  }),
+
+  // Organization Usage Statistics
+  getOrganizationUsage: orgProcedure.query(async ({ ctx }) => {
+    const { PLANS } = await import("../lib/plans");
+
+    // Get current organization details
+    const [org] = await db
+      .select({
+        id: organization.id,
+        planTier: organization.planTier,
+      })
+      .from(organization)
+      .where(eq(organization.id, ctx.organizationId));
+
+    if (!org) {
+      throw new Error("Organization not found");
+    }
+
+    // Get plan limits
+    const plan = PLANS[org.planTier as keyof typeof PLANS];
+
+    // Count active API keys
+    const [apiKeyCount] = await db
+      .select({ count: count() })
+      .from(apiKey)
+      .where(
+        and(
+          eq(apiKey.organizationId, ctx.organizationId),
+          eq(apiKey.isActive, "true")
+        )
+      );
+
+    // Count organization members
+    const [memberCount] = await db
+      .select({ count: count() })
+      .from(organizationUser)
+      .where(eq(organizationUser.organizationId, ctx.organizationId));
+
+    return {
+      planTier: org.planTier,
+      limits: plan.limits,
+      usage: {
+        apiKeys: apiKeyCount.count || 0,
+        members: memberCount.count || 0,
+        projects: 0, // Placeholder - implement based on your app's project schema
+      },
+    };
   }),
 
   // Organization Invites
