@@ -30,13 +30,7 @@ export async function createUserWithOrganization({
   // Default org name/slug if not provided
   const defaultOrgName = orgName || `${userName}'s Organization`;
   const defaultOrgSlug = orgSlug || generateSlug(userName);
-  console.log("Creating user with organization", {
-    userId,
-    userName,
-    userEmail,
-    orgName: defaultOrgName,
-    orgSlug: defaultOrgSlug,
-  });
+
   try {
     await db.transaction(async (tx) => {
       // Create the organization first
@@ -112,6 +106,7 @@ export async function getUserOrganizations(userId: string) {
       id: organization.id,
       name: organization.name,
       slug: organization.slug,
+      description: organization.description,
       planTier: organizationSubscription.planTier,
       subscriptionStatus: organizationSubscription.subscriptionStatus,
       role: organizationUser.role,
