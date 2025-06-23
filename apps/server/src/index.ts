@@ -6,6 +6,7 @@ import { logger } from "hono/logger";
 import { auth } from "./lib/auth";
 import { createContext } from "./lib/context";
 import { appRouter } from "./routers/index";
+import { v1Api } from "./routes/api/v1";
 
 const app = new Hono();
 
@@ -21,6 +22,9 @@ app.use(
 );
 
 app.on(["POST", "GET"], "/api/auth/**", (c) => auth.handler(c.req.raw));
+
+// API v1 routes (API key authenticated)
+app.route("/api/v1", v1Api);
 
 // Stripe webhook endpoint (before JSON parsing middleware)
 app.post("/api/stripe/webhook", async (c) => {

@@ -543,7 +543,7 @@ export const appRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { EmailService } = await import("../lib/email");
+      const { EmailService } = await import("../emails");
 
       // Check if user is already a member
       const existingMember = await db
@@ -626,11 +626,13 @@ export const appRouter = router({
 
       // Send invite email
       try {
-        await EmailService.sendInviteEmail({
+        const inviteUrl = `${process.env.CORS_ORIGIN}/auth/accept-invite?token=${token}`;
+
+        await EmailService.sendInvite({
           inviterName: inviter.name || "Someone",
           inviterEmail: inviter.email,
           organizationName: org.name,
-          inviteToken: token,
+          inviteUrl,
           recipientEmail: input.email,
           role: input.role,
         });
@@ -670,7 +672,7 @@ export const appRouter = router({
   resendInvite: adminProcedure
     .input(z.object({ inviteId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const { EmailService } = await import("../lib/email");
+      const { EmailService } = await import("../emails");
 
       // Get invite details
       const [invite] = await db
@@ -726,11 +728,13 @@ export const appRouter = router({
       }
 
       // Resend invite email
-      await EmailService.sendInviteEmail({
+      const inviteUrl = `${process.env.CORS_ORIGIN}/auth/accept-invite?token=${invite.token}`;
+
+      await EmailService.sendInvite({
         inviterName: inviter.name || "Someone",
         inviterEmail: inviter.email,
         organizationName: org.name,
-        inviteToken: invite.token,
+        inviteUrl,
         recipientEmail: invite.email,
         role: invite.role,
       });
@@ -809,7 +813,7 @@ export const appRouter = router({
   completeInviteAcceptance: publicProcedure
     .input(z.object({ token: z.string(), userId: z.string() }))
     .mutation(async ({ input }) => {
-      const { EmailService } = await import("../lib/email");
+      const { EmailService } = await import("../emails");
 
       return await db.transaction(async (tx) => {
         // Get invite details
@@ -904,11 +908,14 @@ export const appRouter = router({
         // Send welcome email
         if (org) {
           try {
-            await EmailService.sendWelcomeEmail({
+            const dashboardUrl = `${process.env.CORS_ORIGIN}/${invite.organizationId}`;
+
+            await EmailService.sendWelcome({
               userName: userDetails.name || "User",
               userEmail: userDetails.email,
               organizationName: org.name,
               role: invite.role,
+              dashboardUrl,
             });
           } catch (error) {
             console.error("Failed to send welcome email:", error);

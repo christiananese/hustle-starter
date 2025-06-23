@@ -65,6 +65,9 @@
 - [x] ✅ Beautiful HTML email templates for invites and welcome messages
 - [x] ✅ Complete invite management UI (send, resend, revoke)
 - [x] ✅ Role-based access control for invite management
+- [x] ✅ **REFACTORED**: Template-based email system with React components
+- [x] ✅ **REFACTORED**: Dedicated TypeScript config for emails directory
+- [x] ✅ **REFACTORED**: Clean development logging (links only, no full email content)
 
 ---
 
@@ -79,9 +82,12 @@
 - [x] ✅ Route to generate + store hashed key
 - [x] ✅ Route to revoke key
 - [x] ✅ Role-based access control (admin+ required)
-- [ ] 🔄 Middleware to extract API key from `Authorization: Bearer ...`
-- [ ] 🔄 Validate API key and attach `orgId` context
-- [ ] 🔄 Add optional `requireApiKey()` guard for external-facing routes
+- [x] ✅ Middleware to extract API key from `Authorization: Bearer ...`
+- [x] ✅ Validate API key and attach `orgId` context
+- [x] ✅ Add `requireApiKey()` guard for external-facing routes
+- [x] ✅ **NEW**: Per-API-key rate limiting with configurable windows
+- [x] ✅ **NEW**: Example `/api/v1/*` endpoints with different rate limits
+- [x] ✅ **NEW**: Security features (expiration, revocation, hashing)
 
 ---
 
@@ -195,20 +201,23 @@
 
 ### 🔥 High Priority (Core Functionality)
 
-1. ~~**Organization Invites System**~~ ✅ **COMPLETED**
+1. ~~**Organization Invites System**~~ ✅ **COMPLETED & REFACTORED**
    - ~~Email integration with Resend~~ ✅
    - ~~Invite acceptance flow~~ ✅
    - ~~Pending invites management~~ ✅
+   - ~~Template-based email system~~ ✅
+   - ~~Dedicated TypeScript configuration~~ ✅
 
-2. **API Key Authentication Middleware**
-   - Extract API keys from Authorization header
-   - Validate and attach org context
-   - Rate limiting per API key
+2. ~~**API Key Authentication Middleware**~~ ✅ **COMPLETED**
+   - ~~Extract API keys from Authorization header~~ ✅
+   - ~~Validate and attach org context~~ ✅
+   - ~~Rate limiting per API key~~ ✅
+   - ~~Example API v1 endpoints~~ ✅
 
-3. **Plan Limits Enforcement**
-   - Implement actual limit checking
-   - Graceful limit exceeded handling
-   - Usage tracking and display
+3. **Plan Limits Enforcement** (App-Specific - Not for Starter)
+   - Framework provided for limit checking
+   - Examples in documentation
+   - Implement when building specific apps
 
 ### 🛡️ Medium Priority (Production Readiness)
 
