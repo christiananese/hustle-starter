@@ -22,7 +22,7 @@ export const organization = pgTable("organization", {
       "unpaid",
     ],
   }),
-  planTier: text("plan_tier", { enum: ["free", "pro", "enterprise"] })
+  planTier: text("plan_tier", { enum: ["free", "basic", "pro", "enterprise"] })
     .notNull()
     .default("free"),
   // Audit fields
@@ -52,7 +52,7 @@ export const organizationSubscription = pgTable("organization_subscription", {
       "unpaid",
     ],
   }),
-  planTier: text("plan_tier", { enum: ["free", "pro", "enterprise"] })
+  planTier: text("plan_tier", { enum: ["free", "basic", "pro", "enterprise"] })
     .notNull()
     .default("free"),
   // Audit fields

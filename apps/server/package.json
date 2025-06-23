@@ -27,13 +27,15 @@
     "hono": "^4.7.6",
     "nanoid": "^5.1.5",
     "pg": "^8.14.1",
+    "stripe": "^18.2.1",
     "zod": "^3.25.16"
   },
   "devDependencies": {
-    "tsc-alias": "^1.8.11",
-    "typescript": "^5.8.2",
     "@types/bun": "^1.2.6",
+    "@types/pg": "^8.11.11",
+    "@types/stripe": "^8.0.417",
     "drizzle-kit": "^0.30.5",
-    "@types/pg": "^8.11.11"
+    "tsc-alias": "^1.8.11",
+    "typescript": "^5.8.2"
   }
 }

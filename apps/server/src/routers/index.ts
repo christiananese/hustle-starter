@@ -389,6 +389,140 @@ export const appRouter = router({
 
       return { success: true };
     }),
+
+  // Billing Management
+  getCurrentSubscription: orgProcedure.query(async ({ ctx }) => {
+    const [org] = await db
+      .select({
+        id: organization.id,
+        name: organization.name,
+        planTier: organization.planTier,
+        stripeCustomerId: organization.stripeCustomerId,
+        stripeSubscriptionId: organization.stripeSubscriptionId,
+        subscriptionStatus: organization.subscriptionStatus,
+      })
+      .from(organization)
+      .where(eq(organization.id, ctx.organizationId));
+
+    if (!org) {
+      throw new Error("Organization not found");
+    }
+
+    return org;
+  }),
+
+  createCheckoutSession: adminProcedure
+    .input(
+      z.object({
+        planId: z.enum(["basic", "pro"]),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { StripeService } = await import("../lib/stripe");
+      const { PLANS } = await import("../lib/plans");
+
+      const plan = PLANS[input.planId];
+      if (!plan.priceId) {
+        throw new Error("Invalid plan selected");
+      }
+
+      // Get organization details
+      const [org] = await db
+        .select({
+          id: organization.id,
+          name: organization.name,
+          stripeCustomerId: organization.stripeCustomerId,
+        })
+        .from(organization)
+        .where(eq(organization.id, ctx.organizationId));
+
+      if (!org) {
+        throw new Error("Organization not found");
+      }
+
+      // Create checkout session
+      const session = await StripeService.createCheckoutSession({
+        customerId: org.stripeCustomerId || undefined,
+        priceId: plan.priceId,
+        orgId: org.id,
+        successUrl: `${process.env.CORS_ORIGIN}/${org.id}/settings/billing?success=true`,
+        cancelUrl: `${process.env.CORS_ORIGIN}/${org.id}/settings/billing?canceled=true`,
+      });
+
+      return { url: session.url };
+    }),
+
+  createPortalSession: adminProcedure.mutation(async ({ ctx }) => {
+    const { StripeService } = await import("../lib/stripe");
+
+    // Get organization details
+    const [org] = await db
+      .select({
+        id: organization.id,
+        stripeCustomerId: organization.stripeCustomerId,
+      })
+      .from(organization)
+      .where(eq(organization.id, ctx.organizationId));
+
+    if (!org?.stripeCustomerId) {
+      throw new Error("No billing account found");
+    }
+
+    // Create portal session
+    const session = await StripeService.createPortalSession({
+      customerId: org.stripeCustomerId,
+      returnUrl: `${process.env.CORS_ORIGIN}/${org.id}/settings/billing`,
+    });
+
+    return { url: session.url };
+  }),
+
+  cancelSubscription: ownerProcedure.mutation(async ({ ctx }) => {
+    const { StripeService } = await import("../lib/stripe");
+
+    // Get organization details
+    const [org] = await db
+      .select({
+        id: organization.id,
+        stripeSubscriptionId: organization.stripeSubscriptionId,
+      })
+      .from(organization)
+      .where(eq(organization.id, ctx.organizationId));
+
+    if (!org?.stripeSubscriptionId) {
+      throw new Error("No active subscription found");
+    }
+
+    // Cancel subscription at period end
+    await StripeService.cancelSubscription({
+      subscriptionId: org.stripeSubscriptionId,
+      immediately: false,
+    });
+
+    // Update organization status
+    await db
+      .update(organization)
+      .set({
+        subscriptionStatus: "canceled",
+        updatedAt: new Date(),
+      })
+      .where(eq(organization.id, ctx.organizationId));
+
+    return { success: true };
+  }),
+
+  getPlans: publicProcedure.query(async () => {
+    const { PLANS } = await import("../lib/plans");
+
+    // Return plans without sensitive data
+    return Object.entries(PLANS).map(([planId, plan]) => ({
+      id: planId,
+      name: plan.name,
+      price: plan.price,
+      features: plan.features,
+      isCustom: "isCustom" in plan ? plan.isCustom : false,
+    }));
+  }),
 });
 
 export type AppRouter = typeof appRouter;
