@@ -10,19 +10,20 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as OrgSlugRouteImport } from './routes/$orgSlug'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as OrgSlugIndexRouteImport } from './routes/$orgSlug/index'
+import { Route as AuthSignupRouteImport } from './routes/auth/signup'
+import { Route as AuthLoginRouteImport } from './routes/auth/login'
+import { Route as OrgSlugSettingsIndexRouteImport } from './routes/$orgSlug/settings/index'
+import { Route as OrgSlugSettingsMembersRouteImport } from './routes/$orgSlug/settings/members'
+import { Route as OrgSlugSettingsBillingRouteImport } from './routes/$orgSlug/settings/billing'
+import { Route as OrgSlugSettingsApiKeysRouteImport } from './routes/$orgSlug/settings/api-keys'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -40,43 +41,129 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OrgSlugIndexRoute = OrgSlugIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => OrgSlugRoute,
+} as any)
+const AuthSignupRoute = AuthSignupRouteImport.update({
+  id: '/auth/signup',
+  path: '/auth/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/auth/login',
+  path: '/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrgSlugSettingsIndexRoute = OrgSlugSettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => OrgSlugRoute,
+} as any)
+const OrgSlugSettingsMembersRoute = OrgSlugSettingsMembersRouteImport.update({
+  id: '/settings/members',
+  path: '/settings/members',
+  getParentRoute: () => OrgSlugRoute,
+} as any)
+const OrgSlugSettingsBillingRoute = OrgSlugSettingsBillingRouteImport.update({
+  id: '/settings/billing',
+  path: '/settings/billing',
+  getParentRoute: () => OrgSlugRoute,
+} as any)
+const OrgSlugSettingsApiKeysRoute = OrgSlugSettingsApiKeysRouteImport.update({
+  id: '/settings/api-keys',
+  path: '/settings/api-keys',
+  getParentRoute: () => OrgSlugRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/$orgSlug': typeof OrgSlugRoute
+  '/$orgSlug': typeof OrgSlugRouteWithChildren
   '/dashboard': typeof DashboardRoute
-  '/login': typeof LoginRoute
   '/settings': typeof SettingsRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/signup': typeof AuthSignupRoute
+  '/$orgSlug/': typeof OrgSlugIndexRoute
+  '/$orgSlug/settings/api-keys': typeof OrgSlugSettingsApiKeysRoute
+  '/$orgSlug/settings/billing': typeof OrgSlugSettingsBillingRoute
+  '/$orgSlug/settings/members': typeof OrgSlugSettingsMembersRoute
+  '/$orgSlug/settings': typeof OrgSlugSettingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/$orgSlug': typeof OrgSlugRoute
   '/dashboard': typeof DashboardRoute
-  '/login': typeof LoginRoute
   '/settings': typeof SettingsRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/signup': typeof AuthSignupRoute
+  '/$orgSlug': typeof OrgSlugIndexRoute
+  '/$orgSlug/settings/api-keys': typeof OrgSlugSettingsApiKeysRoute
+  '/$orgSlug/settings/billing': typeof OrgSlugSettingsBillingRoute
+  '/$orgSlug/settings/members': typeof OrgSlugSettingsMembersRoute
+  '/$orgSlug/settings': typeof OrgSlugSettingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/$orgSlug': typeof OrgSlugRoute
+  '/$orgSlug': typeof OrgSlugRouteWithChildren
   '/dashboard': typeof DashboardRoute
-  '/login': typeof LoginRoute
   '/settings': typeof SettingsRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/signup': typeof AuthSignupRoute
+  '/$orgSlug/': typeof OrgSlugIndexRoute
+  '/$orgSlug/settings/api-keys': typeof OrgSlugSettingsApiKeysRoute
+  '/$orgSlug/settings/billing': typeof OrgSlugSettingsBillingRoute
+  '/$orgSlug/settings/members': typeof OrgSlugSettingsMembersRoute
+  '/$orgSlug/settings/': typeof OrgSlugSettingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$orgSlug' | '/dashboard' | '/login' | '/settings'
+  fullPaths:
+    | '/'
+    | '/$orgSlug'
+    | '/dashboard'
+    | '/settings'
+    | '/auth/login'
+    | '/auth/signup'
+    | '/$orgSlug/'
+    | '/$orgSlug/settings/api-keys'
+    | '/$orgSlug/settings/billing'
+    | '/$orgSlug/settings/members'
+    | '/$orgSlug/settings'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$orgSlug' | '/dashboard' | '/login' | '/settings'
-  id: '__root__' | '/' | '/$orgSlug' | '/dashboard' | '/login' | '/settings'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/settings'
+    | '/auth/login'
+    | '/auth/signup'
+    | '/$orgSlug'
+    | '/$orgSlug/settings/api-keys'
+    | '/$orgSlug/settings/billing'
+    | '/$orgSlug/settings/members'
+    | '/$orgSlug/settings'
+  id:
+    | '__root__'
+    | '/'
+    | '/$orgSlug'
+    | '/dashboard'
+    | '/settings'
+    | '/auth/login'
+    | '/auth/signup'
+    | '/$orgSlug/'
+    | '/$orgSlug/settings/api-keys'
+    | '/$orgSlug/settings/billing'
+    | '/$orgSlug/settings/members'
+    | '/$orgSlug/settings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  OrgSlugRoute: typeof OrgSlugRoute
+  OrgSlugRoute: typeof OrgSlugRouteWithChildren
   DashboardRoute: typeof DashboardRoute
-  LoginRoute: typeof LoginRoute
   SettingsRoute: typeof SettingsRoute
+  AuthLoginRoute: typeof AuthLoginRoute
+  AuthSignupRoute: typeof AuthSignupRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -86,13 +173,6 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -116,15 +196,84 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$orgSlug/': {
+      id: '/$orgSlug/'
+      path: '/'
+      fullPath: '/$orgSlug/'
+      preLoaderRoute: typeof OrgSlugIndexRouteImport
+      parentRoute: typeof OrgSlugRoute
+    }
+    '/auth/signup': {
+      id: '/auth/signup'
+      path: '/auth/signup'
+      fullPath: '/auth/signup'
+      preLoaderRoute: typeof AuthSignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/auth/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$orgSlug/settings/': {
+      id: '/$orgSlug/settings/'
+      path: '/settings'
+      fullPath: '/$orgSlug/settings'
+      preLoaderRoute: typeof OrgSlugSettingsIndexRouteImport
+      parentRoute: typeof OrgSlugRoute
+    }
+    '/$orgSlug/settings/members': {
+      id: '/$orgSlug/settings/members'
+      path: '/settings/members'
+      fullPath: '/$orgSlug/settings/members'
+      preLoaderRoute: typeof OrgSlugSettingsMembersRouteImport
+      parentRoute: typeof OrgSlugRoute
+    }
+    '/$orgSlug/settings/billing': {
+      id: '/$orgSlug/settings/billing'
+      path: '/settings/billing'
+      fullPath: '/$orgSlug/settings/billing'
+      preLoaderRoute: typeof OrgSlugSettingsBillingRouteImport
+      parentRoute: typeof OrgSlugRoute
+    }
+    '/$orgSlug/settings/api-keys': {
+      id: '/$orgSlug/settings/api-keys'
+      path: '/settings/api-keys'
+      fullPath: '/$orgSlug/settings/api-keys'
+      preLoaderRoute: typeof OrgSlugSettingsApiKeysRouteImport
+      parentRoute: typeof OrgSlugRoute
+    }
   }
 }
 
+interface OrgSlugRouteChildren {
+  OrgSlugIndexRoute: typeof OrgSlugIndexRoute
+  OrgSlugSettingsApiKeysRoute: typeof OrgSlugSettingsApiKeysRoute
+  OrgSlugSettingsBillingRoute: typeof OrgSlugSettingsBillingRoute
+  OrgSlugSettingsMembersRoute: typeof OrgSlugSettingsMembersRoute
+  OrgSlugSettingsIndexRoute: typeof OrgSlugSettingsIndexRoute
+}
+
+const OrgSlugRouteChildren: OrgSlugRouteChildren = {
+  OrgSlugIndexRoute: OrgSlugIndexRoute,
+  OrgSlugSettingsApiKeysRoute: OrgSlugSettingsApiKeysRoute,
+  OrgSlugSettingsBillingRoute: OrgSlugSettingsBillingRoute,
+  OrgSlugSettingsMembersRoute: OrgSlugSettingsMembersRoute,
+  OrgSlugSettingsIndexRoute: OrgSlugSettingsIndexRoute,
+}
+
+const OrgSlugRouteWithChildren =
+  OrgSlugRoute._addFileChildren(OrgSlugRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  OrgSlugRoute: OrgSlugRoute,
+  OrgSlugRoute: OrgSlugRouteWithChildren,
   DashboardRoute: DashboardRoute,
-  LoginRoute: LoginRoute,
   SettingsRoute: SettingsRoute,
+  AuthLoginRoute: AuthLoginRoute,
+  AuthSignupRoute: AuthSignupRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

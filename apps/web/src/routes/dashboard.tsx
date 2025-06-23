@@ -75,7 +75,7 @@ function RouteComponent() {
   // All useEffect hooks must be at the top before any conditional returns
   useEffect(() => {
     if (!session && !authPending) {
-      navigate({ to: "/login" });
+      navigate({ to: "/auth/login" });
     }
   }, [session, authPending, navigate]);
 

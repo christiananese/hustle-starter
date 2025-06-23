@@ -19,7 +19,7 @@ function RouteComponent() {
 
   useEffect(() => {
     if (!session && !authPending) {
-      navigate({ to: "/login" });
+      navigate({ to: "/auth/login" });
     }
   }, [session, authPending, navigate]);
 

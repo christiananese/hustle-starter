@@ -1,8 +1,10 @@
 import { authClient } from "@/lib/auth-client";
 import { trpc } from "@/utils/trpc";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import {
   Building2,
+  ChevronRight,
   CreditCard,
   Home,
   Key,
@@ -12,6 +14,12 @@ import {
 } from "lucide-react";
 import * as React from "react";
 
+import { ModeToggle } from "@/components/mode-toggle";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +39,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
 
@@ -45,20 +56,28 @@ const getNavigationItems = (orgSlug?: string) => [
     url: orgSlug ? `/${orgSlug}/team` : "/team",
     icon: Users,
   },
+];
+
+const getSettingsItems = (orgSlug?: string) => [
   {
-    title: "API Keys",
-    url: orgSlug ? `/${orgSlug}/settings/api-keys` : "/api-keys",
-    icon: Key,
+    title: "General",
+    url: orgSlug ? `/${orgSlug}/settings` : "/settings",
+    icon: Settings,
+  },
+  {
+    title: "Members",
+    url: orgSlug ? `/${orgSlug}/settings/members` : "/settings/members",
+    icon: Users,
   },
   {
     title: "Billing",
-    url: orgSlug ? `/${orgSlug}/billing` : "/billing",
+    url: orgSlug ? `/${orgSlug}/settings/billing` : "/settings/billing",
     icon: CreditCard,
   },
   {
-    title: "Settings",
-    url: orgSlug ? `/${orgSlug}/settings` : "/settings",
-    icon: Settings,
+    title: "API Keys",
+    url: orgSlug ? `/${orgSlug}/settings/api-keys` : "/settings/api-keys",
+    icon: Key,
   },
 ];
 
@@ -91,7 +110,7 @@ export function AppSidebar({
 
   const handleSignOut = async () => {
     await authClient.signOut();
-    window.location.href = "/login";
+    window.location.href = "/auth/login";
   };
 
   const handleCreateOrg = () => {
@@ -192,13 +211,46 @@ export function AppSidebar({
               {getNavigationItems(currentOrgSlug).map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <a href={item.url}>
+                    <Link to={item.url}>
                       <item.icon className="size-4" />
                       <span>{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Settings</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <Collapsible className="group/collapsible">
+                <SidebarMenuItem>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton className="w-full">
+                      <Settings className="size-4" />
+                      <span>Settings</span>
+                      <ChevronRight className="ml-auto size-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      {getSettingsItems(currentOrgSlug).map((item) => (
+                        <SidebarMenuSubItem key={item.title}>
+                          <SidebarMenuSubButton asChild>
+                            <Link to={item.url}>
+                              <item.icon className="size-4" />
+                              <span>{item.title}</span>
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ))}
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </SidebarMenuItem>
+              </Collapsible>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -243,6 +295,13 @@ export function AppSidebar({
                 >
                   Profile Settings
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <div className="px-2 py-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Theme</span>
+                    <ModeToggle />
+                  </div>
+                </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut}>
                   Sign out

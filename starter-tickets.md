@@ -2,10 +2,10 @@
 
 ## 📁 Project Structure
 
-- [ ] ✅ Initialize monorepo with Turborepo
-- [ ] ✅ Install and configure Bun, Hono, Drizzle, TRPC, Tailwind, shadcn/ui
-- [ ] Create `/apps/web` (Vite + React + TanStack Router)
-- [ ] Create `/apps/server` (Hono + Drizzle + TRPC)
+- [x] ✅ Initialize monorepo with Turborepo
+- [x] ✅ Install and configure Bun, Hono, Drizzle, TRPC, Tailwind, shadcn/ui
+- [x] Create `/apps/web` (Vite + React + TanStack Router)
+- [x] Create `/apps/server` (Hono + Drizzle + TRPC)
 - [ ] Create `/packages/ui` for shared UI components
 - [ ] Create `/packages/db` for Drizzle schema and DB utils
 
@@ -22,39 +22,39 @@
 
 ### 🧠 Backend Logic
 
-- [ ] Create `getCurrentOrg()` middleware for Hono
-- [ ] Inject `orgId` from `x-organization-id` header
-- [ ] Ensure user is a member of the org
-- [ ] Create `/me/organizations` route to list user's orgs
-- [ ] Add ability to switch org in client context
+- [x] Create `getCurrentOrg()` middleware for Hono
+- [x] Inject `orgId` from `x-organization-id` header
+- [x] Ensure user is a member of the org
+- [x] Create `/me/organizations` route to list user's orgs
+- [x] Add ability to switch org in client context
 
 ---
 
 ## 🧑‍💻 Auth & Role-based Access
 
-- [ ] Use `better-auth` to manage sessions
-- [ ] Store current org in session or header
-- [ ] Check membership in TRPC middleware
+- [x] Use `better-auth` to manage sessions
+- [x] Store current org in session or header
+- [x] Check membership in TRPC middleware
 - [ ] Implement `requireRole('admin')` guard
-- [ ] Add frontend context to hold `currentOrg` and `role`
+- [x] Add frontend context to hold `currentOrg` and `role`
 
 ---
 
 ## 🧪 Org Management (CRUD)
 
-- [ ] Create org on signup (auto)
-- [ ] Allow creating new orgs from dashboard
-- [ ] Allow switching orgs (dropdown)
-- [ ] Allow updating org name, slug, logo
+- [x] Create org on signup (auto)
+- [x] Allow creating new orgs from dashboard
+- [x] Allow switching orgs (dropdown)
+- [x] Allow updating org name, slug, logo
 
 ---
 
 ## 📨 Organization Invites (Resend + Signup)
 
-- [ ] Add `organization_invite` table (email, orgId, role, token, expiresAt)
+- [x] Add `organization_invite` table (email, orgId, role, token, expiresAt)
 - [ ] Backend API to create invite link and send email via Resend
 - [ ] Accept invite link (token) → connects user to org with role
-- [ ] Show pending invites in dashboard
+- [x] Show pending invites in dashboard
 
 ---
 
@@ -62,7 +62,7 @@
 
 ### ✅ Schema
 
-- [ ] Create `api_keys` table (id, orgId, label, hashedKey, createdBy, createdAt, expiresAt, revoked)
+- [x] Create `api_keys` table (id, orgId, label, hashedKey, createdBy, createdAt, expiresAt, revoked)
 
 ### ✅ Backend
 
@@ -76,24 +76,24 @@
 
 ## 💳 Stripe Subscriptions (Org-level)
 
-- [ ] Add `stripe_customer_id` and `stripe_subscription_id` to `organization`
+- [x] Add `stripe_customer_id` and `stripe_subscription_id` to `organization`
 - [ ] Create Stripe checkout session tied to org
 - [ ] Handle Stripe webhook events:
   - [ ] `checkout.session.completed`
   - [ ] `invoice.payment_failed`
   - [ ] `customer.subscription.deleted`
 - [ ] Update org metadata with plan tier
-- [ ] Add frontend billing page (change plan, view status)
+- [x] Add frontend billing page (change plan, view status)
 
 ---
 
 ## 🧩 TRPC API Structure
 
-- [ ] Create TRPC context with `userId`, `orgId`, `role`
-- [ ] Add `orgOnly` and `adminOnly` procedures
+- [x] Create TRPC context with `userId`, `orgId`, `role`
+- [x] Add `orgOnly` and `adminOnly` procedures
 - [ ] Create routers:
-  - [ ] `auth` – login, logout
-  - [ ] `org` – create, update, switch
+  - [x] `auth` – login, logout
+  - [x] `org` – create, update, switch
   - [ ] `orgUser` – list users, change role
   - [ ] `invite` – invite + accept
   - [ ] `apiKeys` – create, revoke, list
@@ -105,26 +105,26 @@
 
 ### 🧠 Context & Layout
 
-- [ ] Create `OrgContext` to store `orgId`, `role`, `setOrgId`
-- [ ] Add `AuthProvider` using `better-auth`
-- [ ] Wrap layout with `OrgProvider` and `AuthProvider`
+- [x] Create `OrgContext` to store `orgId`, `role`, `setOrgId`
+- [x] Add `AuthProvider` using `better-auth`
+- [x] Wrap layout with `OrgProvider` and `AuthProvider`
 
 ### 📦 Pages
 
-- [ ] `/auth` – login/signup pages
-- [ ] `/dashboard` – org dashboard
-- [ ] `/organization` – org settings
-- [ ] `/organization/users` – manage users
-- [ ] `/organization/invites` – pending invites
-- [ ] `/organization/billing` – Stripe billing
-- [ ] `/api-keys` – list, revoke, create keys
+- [x] `/auth` – login/signup pages
+- [x] `/dashboard` – org dashboard
+- [x] `/organization` – org settings
+- [x] `/organization/users` – manage users
+- [x] `/organization/invites` – pending invites
+- [x] `/organization/billing` – Stripe billing
+- [x] `/api-keys` – list, revoke, create keys
 
 ### 🧩 Components
 
-- [ ] `OrgSwitcher`
-- [ ] `RoleBadge`
-- [ ] `InviteUserForm`
-- [ ] `ApiKeyList`
+- [x] `OrgSwitcher`
+- [x] `RoleBadge`
+- [x] `InviteUserForm`
+- [x] `ApiKeyList`
 - [ ] `SubscriptionStatusBadge`
 
 ---
