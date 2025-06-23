@@ -8,6 +8,7 @@ import {
   CreditCard,
   Home,
   Key,
+  Mail,
   Plus,
   Settings,
   Users,
@@ -68,6 +69,11 @@ const getSettingsItems = (orgSlug?: string) => [
     title: "Members",
     url: orgSlug ? `/${orgSlug}/settings/members` : "/settings/members",
     icon: Users,
+  },
+  {
+    title: "Invites",
+    url: orgSlug ? `/${orgSlug}/settings/invites` : "/settings/invites",
+    icon: Mail,
   },
   {
     title: "Billing",

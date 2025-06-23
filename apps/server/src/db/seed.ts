@@ -1,12 +1,6 @@
 import "dotenv/config";
 import { eq } from "drizzle-orm";
-import {
-  db,
-  organization,
-  organizationSubscription,
-  organizationUser,
-  user,
-} from "./index";
+import { db, organization, organizationUser, user } from "./index";
 
 export interface CreateUserWithOrgParams {
   userId: string;
@@ -33,13 +27,14 @@ export async function createUserWithOrganization({
 
   try {
     await db.transaction(async (tx) => {
-      // Create the organization first
+      // Create the organization with billing fields
       const [newOrg] = await tx
         .insert(organization)
         .values({
           id: `org_${generateId()}`,
           name: defaultOrgName,
           slug: defaultOrgSlug,
+          planTier: "free", // Default to free plan
           createdBy: userId,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -53,21 +48,10 @@ export async function createUserWithOrganization({
               members: 5,
               apiKeys: 3,
             },
+            trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days trial
           },
         })
         .returning();
-
-      // Create the subscription for the organization
-      await tx.insert(organizationSubscription).values({
-        id: `sub_${generateId()}`,
-        organizationId: newOrg.id,
-        planTier: "free",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        metadata: {
-          trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days trial
-        },
-      });
 
       // Add the user as the owner of the organization
       await tx.insert(organizationUser).values({
@@ -107,8 +91,8 @@ export async function getUserOrganizations(userId: string) {
       name: organization.name,
       slug: organization.slug,
       description: organization.description,
-      planTier: organizationSubscription.planTier,
-      subscriptionStatus: organizationSubscription.subscriptionStatus,
+      planTier: organization.planTier,
+      subscriptionStatus: organization.subscriptionStatus,
       role: organizationUser.role,
       joinedAt: organizationUser.joinedAt,
     })
@@ -116,10 +100,6 @@ export async function getUserOrganizations(userId: string) {
     .innerJoin(
       organizationUser,
       eq(organization.id, organizationUser.organizationId)
-    )
-    .leftJoin(
-      organizationSubscription,
-      eq(organization.id, organizationSubscription.organizationId)
     )
     .where(eq(organizationUser.userId, userId));
 }

@@ -16,8 +16,10 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as OrgSlugIndexRouteImport } from './routes/$orgSlug/index'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
+import { Route as AuthAcceptInviteRouteImport } from './routes/auth/accept-invite'
 import { Route as OrgSlugSettingsIndexRouteImport } from './routes/$orgSlug/settings/index'
 import { Route as OrgSlugSettingsMembersRouteImport } from './routes/$orgSlug/settings/members'
+import { Route as OrgSlugSettingsInvitesRouteImport } from './routes/$orgSlug/settings/invites'
 import { Route as OrgSlugSettingsBillingRouteImport } from './routes/$orgSlug/settings/billing'
 import { Route as OrgSlugSettingsApiKeysRouteImport } from './routes/$orgSlug/settings/api-keys'
 
@@ -56,6 +58,11 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/auth/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthAcceptInviteRoute = AuthAcceptInviteRouteImport.update({
+  id: '/auth/accept-invite',
+  path: '/auth/accept-invite',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OrgSlugSettingsIndexRoute = OrgSlugSettingsIndexRouteImport.update({
   id: '/settings/',
   path: '/settings/',
@@ -64,6 +71,11 @@ const OrgSlugSettingsIndexRoute = OrgSlugSettingsIndexRouteImport.update({
 const OrgSlugSettingsMembersRoute = OrgSlugSettingsMembersRouteImport.update({
   id: '/settings/members',
   path: '/settings/members',
+  getParentRoute: () => OrgSlugRoute,
+} as any)
+const OrgSlugSettingsInvitesRoute = OrgSlugSettingsInvitesRouteImport.update({
+  id: '/settings/invites',
+  path: '/settings/invites',
   getParentRoute: () => OrgSlugRoute,
 } as any)
 const OrgSlugSettingsBillingRoute = OrgSlugSettingsBillingRouteImport.update({
@@ -82,11 +94,13 @@ export interface FileRoutesByFullPath {
   '/$orgSlug': typeof OrgSlugRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/settings': typeof SettingsRoute
+  '/auth/accept-invite': typeof AuthAcceptInviteRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
   '/$orgSlug/': typeof OrgSlugIndexRoute
   '/$orgSlug/settings/api-keys': typeof OrgSlugSettingsApiKeysRoute
   '/$orgSlug/settings/billing': typeof OrgSlugSettingsBillingRoute
+  '/$orgSlug/settings/invites': typeof OrgSlugSettingsInvitesRoute
   '/$orgSlug/settings/members': typeof OrgSlugSettingsMembersRoute
   '/$orgSlug/settings': typeof OrgSlugSettingsIndexRoute
 }
@@ -94,11 +108,13 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/settings': typeof SettingsRoute
+  '/auth/accept-invite': typeof AuthAcceptInviteRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
   '/$orgSlug': typeof OrgSlugIndexRoute
   '/$orgSlug/settings/api-keys': typeof OrgSlugSettingsApiKeysRoute
   '/$orgSlug/settings/billing': typeof OrgSlugSettingsBillingRoute
+  '/$orgSlug/settings/invites': typeof OrgSlugSettingsInvitesRoute
   '/$orgSlug/settings/members': typeof OrgSlugSettingsMembersRoute
   '/$orgSlug/settings': typeof OrgSlugSettingsIndexRoute
 }
@@ -108,11 +124,13 @@ export interface FileRoutesById {
   '/$orgSlug': typeof OrgSlugRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/settings': typeof SettingsRoute
+  '/auth/accept-invite': typeof AuthAcceptInviteRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
   '/$orgSlug/': typeof OrgSlugIndexRoute
   '/$orgSlug/settings/api-keys': typeof OrgSlugSettingsApiKeysRoute
   '/$orgSlug/settings/billing': typeof OrgSlugSettingsBillingRoute
+  '/$orgSlug/settings/invites': typeof OrgSlugSettingsInvitesRoute
   '/$orgSlug/settings/members': typeof OrgSlugSettingsMembersRoute
   '/$orgSlug/settings/': typeof OrgSlugSettingsIndexRoute
 }
@@ -123,11 +141,13 @@ export interface FileRouteTypes {
     | '/$orgSlug'
     | '/dashboard'
     | '/settings'
+    | '/auth/accept-invite'
     | '/auth/login'
     | '/auth/signup'
     | '/$orgSlug/'
     | '/$orgSlug/settings/api-keys'
     | '/$orgSlug/settings/billing'
+    | '/$orgSlug/settings/invites'
     | '/$orgSlug/settings/members'
     | '/$orgSlug/settings'
   fileRoutesByTo: FileRoutesByTo
@@ -135,11 +155,13 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/settings'
+    | '/auth/accept-invite'
     | '/auth/login'
     | '/auth/signup'
     | '/$orgSlug'
     | '/$orgSlug/settings/api-keys'
     | '/$orgSlug/settings/billing'
+    | '/$orgSlug/settings/invites'
     | '/$orgSlug/settings/members'
     | '/$orgSlug/settings'
   id:
@@ -148,11 +170,13 @@ export interface FileRouteTypes {
     | '/$orgSlug'
     | '/dashboard'
     | '/settings'
+    | '/auth/accept-invite'
     | '/auth/login'
     | '/auth/signup'
     | '/$orgSlug/'
     | '/$orgSlug/settings/api-keys'
     | '/$orgSlug/settings/billing'
+    | '/$orgSlug/settings/invites'
     | '/$orgSlug/settings/members'
     | '/$orgSlug/settings/'
   fileRoutesById: FileRoutesById
@@ -162,6 +186,7 @@ export interface RootRouteChildren {
   OrgSlugRoute: typeof OrgSlugRouteWithChildren
   DashboardRoute: typeof DashboardRoute
   SettingsRoute: typeof SettingsRoute
+  AuthAcceptInviteRoute: typeof AuthAcceptInviteRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthSignupRoute: typeof AuthSignupRoute
 }
@@ -217,6 +242,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/accept-invite': {
+      id: '/auth/accept-invite'
+      path: '/auth/accept-invite'
+      fullPath: '/auth/accept-invite'
+      preLoaderRoute: typeof AuthAcceptInviteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/$orgSlug/settings/': {
       id: '/$orgSlug/settings/'
       path: '/settings'
@@ -229,6 +261,13 @@ declare module '@tanstack/react-router' {
       path: '/settings/members'
       fullPath: '/$orgSlug/settings/members'
       preLoaderRoute: typeof OrgSlugSettingsMembersRouteImport
+      parentRoute: typeof OrgSlugRoute
+    }
+    '/$orgSlug/settings/invites': {
+      id: '/$orgSlug/settings/invites'
+      path: '/settings/invites'
+      fullPath: '/$orgSlug/settings/invites'
+      preLoaderRoute: typeof OrgSlugSettingsInvitesRouteImport
       parentRoute: typeof OrgSlugRoute
     }
     '/$orgSlug/settings/billing': {
@@ -252,6 +291,7 @@ interface OrgSlugRouteChildren {
   OrgSlugIndexRoute: typeof OrgSlugIndexRoute
   OrgSlugSettingsApiKeysRoute: typeof OrgSlugSettingsApiKeysRoute
   OrgSlugSettingsBillingRoute: typeof OrgSlugSettingsBillingRoute
+  OrgSlugSettingsInvitesRoute: typeof OrgSlugSettingsInvitesRoute
   OrgSlugSettingsMembersRoute: typeof OrgSlugSettingsMembersRoute
   OrgSlugSettingsIndexRoute: typeof OrgSlugSettingsIndexRoute
 }
@@ -260,6 +300,7 @@ const OrgSlugRouteChildren: OrgSlugRouteChildren = {
   OrgSlugIndexRoute: OrgSlugIndexRoute,
   OrgSlugSettingsApiKeysRoute: OrgSlugSettingsApiKeysRoute,
   OrgSlugSettingsBillingRoute: OrgSlugSettingsBillingRoute,
+  OrgSlugSettingsInvitesRoute: OrgSlugSettingsInvitesRoute,
   OrgSlugSettingsMembersRoute: OrgSlugSettingsMembersRoute,
   OrgSlugSettingsIndexRoute: OrgSlugSettingsIndexRoute,
 }
@@ -272,6 +313,7 @@ const rootRouteChildren: RootRouteChildren = {
   OrgSlugRoute: OrgSlugRouteWithChildren,
   DashboardRoute: DashboardRoute,
   SettingsRoute: SettingsRoute,
+  AuthAcceptInviteRoute: AuthAcceptInviteRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthSignupRoute: AuthSignupRoute,
 }

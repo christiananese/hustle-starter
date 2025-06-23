@@ -55,7 +55,7 @@ function BillingPage() {
 
   const { data: subscription, isLoading: subscriptionLoading } = useQuery({
     ...trpc.getCurrentSubscription.queryOptions(),
-    enabled: !!organizations?.find((org: any) => org.slug === orgSlug),
+    enabled: !!organizations?.find((org) => org.slug === orgSlug),
   });
 
   const { data: plans, isLoading: plansLoading } = useQuery({
@@ -109,7 +109,7 @@ function BillingPage() {
     },
   });
 
-  const currentOrg = organizations?.find((org: any) => org.slug === orgSlug);
+  const currentOrg = organizations?.find((org) => org.slug === orgSlug);
 
   // Set current organization context for TRPC headers
   useEffect(() => {

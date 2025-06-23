@@ -1,4 +1,15 @@
 // Plan configuration
+function getStripePrice(envVar: string, planName: string): string | null {
+  const priceId = process.env[envVar];
+  if (!priceId) {
+    console.warn(
+      `Warning: ${envVar} not set. ${planName} plan will not be available for checkout.`
+    );
+    return null;
+  }
+  return priceId;
+}
+
 export const PLANS = {
   free: {
     name: "Free",
@@ -14,7 +25,7 @@ export const PLANS = {
   basic: {
     name: "Basic",
     price: 29900, // $299.00 in cents
-    priceId: process.env.STRIPE_BASIC_PRICE_ID!,
+    priceId: getStripePrice("STRIPE_BASIC_PRICE_ID", "Basic"),
     features: [
       "Up to 25 API keys",
       "Up to 10 team members",
@@ -30,7 +41,7 @@ export const PLANS = {
   pro: {
     name: "Pro",
     price: 49900, // $499.00 in cents
-    priceId: process.env.STRIPE_PRO_PRICE_ID!,
+    priceId: getStripePrice("STRIPE_PRO_PRICE_ID", "Pro"),
     features: [
       "Unlimited API keys",
       "Unlimited team members",

@@ -33,35 +33,6 @@ export const organization = pgTable("organization", {
   metadata: jsonb("metadata"),
 });
 
-export const organizationSubscription = pgTable("organization_subscription", {
-  id: text("id").primaryKey(),
-  organizationId: text("organization_id")
-    .notNull()
-    .references(() => organization.id, { onDelete: "cascade" }),
-  // Stripe integration fields
-  stripeCustomerId: text("stripe_customer_id"),
-  stripeSubscriptionId: text("stripe_subscription_id"),
-  subscriptionStatus: text("subscription_status", {
-    enum: [
-      "active",
-      "canceled",
-      "incomplete",
-      "incomplete_expired",
-      "past_due",
-      "trialing",
-      "unpaid",
-    ],
-  }),
-  planTier: text("plan_tier", { enum: ["free", "basic", "pro", "enterprise"] })
-    .notNull()
-    .default("free"),
-  // Audit fields
-  createdAt: timestamp("created_at").notNull(),
-  updatedAt: timestamp("updated_at").notNull(),
-  // Flexible metadata
-  metadata: jsonb("metadata"),
-});
-
 export const organizationUser = pgTable("organization_user", {
   id: text("id").primaryKey(),
   organizationId: text("organization_id")
@@ -134,4 +105,18 @@ export const apiKey = pgTable("api_key", {
   updatedAt: timestamp("updated_at").notNull(),
   // Flexible metadata
   metadata: jsonb("metadata"),
+});
+
+// Webhook event tracking for idempotency
+export const webhookEvent = pgTable("webhook_event", {
+  id: text("id").primaryKey(),
+  eventId: text("event_id").notNull().unique(), // Stripe event ID
+  eventType: text("event_type").notNull(),
+  processed: text("processed").notNull().default("true"),
+  processedAt: timestamp("processed_at").notNull(),
+  // Store the raw event data for debugging
+  eventData: jsonb("event_data"),
+  // Error tracking
+  error: text("error"),
+  retryCount: text("retry_count").notNull().default("0"),
 });
