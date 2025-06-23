@@ -39,6 +39,11 @@ function RouteComponent() {
   const navigate = Route.useNavigate();
   const queryClient = useQueryClient();
 
+  // Check if we're in create mode from URL params
+  const isCreateMode =
+    typeof window !== "undefined" &&
+    window.location.search.includes("create=true");
+
   // Get user's organizations
   const {
     data: organizations,
@@ -53,11 +58,13 @@ function RouteComponent() {
   const createOrgMutation = useMutation({
     mutationFn: (data: { name: string; slug: string; description?: string }) =>
       trpcClient.createOrganization.mutate(data),
-    onSuccess: () => {
+    onSuccess: (newOrg) => {
       refetchOrgs();
       setShowCreateForm(false);
       setOrgName("");
       setOrgSlug("");
+      // Navigate to the new organization
+      navigate({ to: `/${newOrg.slug}`, replace: true });
     },
   });
 
@@ -65,11 +72,25 @@ function RouteComponent() {
   const [orgName, setOrgName] = useState("");
   const [orgSlug, setOrgSlug] = useState("");
 
+  // All useEffect hooks must be at the top before any conditional returns
   useEffect(() => {
     if (!session && !authPending) {
       navigate({ to: "/login" });
     }
   }, [session, authPending, navigate]);
+
+  // If user has organizations, redirect to first org's dashboard (unless creating new org)
+  useEffect(() => {
+    if (
+      organizations &&
+      organizations.length > 0 &&
+      !orgLoading &&
+      !isCreateMode
+    ) {
+      const firstOrg = organizations[0];
+      navigate({ to: `/${firstOrg.slug}`, replace: true });
+    }
+  }, [organizations, orgLoading, navigate, isCreateMode]);
 
   // Loading state
   if (authPending || orgLoading) {
@@ -107,8 +128,8 @@ function RouteComponent() {
     });
   };
 
-  // If user has no organizations, show create organization screen
-  if (!organizations || organizations.length === 0) {
+  // If user has no organizations OR is in create mode, show create organization screen
+  if (!organizations || organizations.length === 0 || isCreateMode) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/50">
         <Card className="w-full max-w-md">

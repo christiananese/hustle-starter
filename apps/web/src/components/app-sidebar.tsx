@@ -34,43 +34,50 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-const navigationItems = [
+const getNavigationItems = (orgSlug?: string) => [
   {
     title: "Dashboard",
-    url: "/dashboard",
+    url: orgSlug ? `/${orgSlug}` : "/dashboard",
     icon: Home,
   },
   {
     title: "Team",
-    url: "/team",
+    url: orgSlug ? `/${orgSlug}/team` : "/team",
     icon: Users,
   },
   {
     title: "API Keys",
-    url: "/api-keys",
+    url: orgSlug ? `/${orgSlug}/settings/api-keys` : "/api-keys",
     icon: Key,
   },
   {
     title: "Billing",
-    url: "/billing",
+    url: orgSlug ? `/${orgSlug}/billing` : "/billing",
     icon: CreditCard,
   },
   {
     title: "Settings",
-    url: "/settings",
+    url: orgSlug ? `/${orgSlug}/settings` : "/settings",
     icon: Settings,
   },
 ];
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({
+  currentOrgSlug,
+  ...props
+}: React.ComponentProps<typeof Sidebar> & {
+  currentOrgSlug?: string;
+}) {
   const { data: session } = authClient.useSession();
   const { data: organizations, isLoading } = useQuery({
     ...trpc.myOrganizations.queryOptions(),
     enabled: !!session,
   });
 
-  // For now, use the first organization as current. Later we can add org switching logic
-  const currentOrg = organizations?.[0];
+  // Find current org by slug, or fall back to first org
+  const currentOrg = currentOrgSlug
+    ? organizations?.find((org: any) => org.slug === currentOrgSlug)
+    : organizations?.[0];
 
   // Get user initials for avatar
   const getUserInitials = (name: string) => {
@@ -88,9 +95,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   };
 
   const handleCreateOrg = () => {
-    // This will be handled by parent component via state management
-    // For now, just reload to show create form
-    window.location.reload();
+    // Navigate to dashboard with a query parameter to force showing create form
+    window.location.href = "/dashboard?create=true";
+  };
+
+  const handleOrgSwitch = (orgSlug: string) => {
+    // Navigate to the selected organization's dashboard
+    window.location.href = `/${orgSlug}`;
   };
 
   if (!session) {
@@ -143,6 +154,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <DropdownMenuItem
                     key={org.id}
                     className="flex items-center gap-2"
+                    onClick={() => handleOrgSwitch(org.slug)}
                   >
                     <div className="flex size-6 items-center justify-center rounded bg-muted">
                       <Building2 className="size-3" />
@@ -153,6 +165,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         {org.planTier} • {org.role}
                       </span>
                     </div>
+                    {currentOrg?.id === org.id && (
+                      <div className="w-2 h-2 bg-primary rounded-full" />
+                    )}
                   </DropdownMenuItem>
                 ))}
                 <DropdownMenuSeparator />
@@ -174,7 +189,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupLabel>Application</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navigationItems.map((item) => (
+              {getNavigationItems(currentOrgSlug).map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <a href={item.url}>
@@ -223,8 +238,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <DropdownMenuContent side="top" align="start" className="w-64">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Profile</DropdownMenuItem>
-                <DropdownMenuItem>Preferences</DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => (window.location.href = "/settings")}
+                >
+                  Profile Settings
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut}>
                   Sign out
