@@ -19,6 +19,17 @@ export const queryClient = new QueryClient({
   }),
 });
 
+// Global store for current organization context
+let currentOrgContext: { id: string; slug: string } | null = null;
+
+export const setCurrentOrgContext = (
+  org: { id: string; slug: string } | null
+) => {
+  currentOrgContext = org;
+};
+
+export const getCurrentOrgContext = () => currentOrgContext;
+
 export const trpcClient = createTRPCClient<AppRouter>({
   links: [
     httpBatchLink({
@@ -28,6 +39,15 @@ export const trpcClient = createTRPCClient<AppRouter>({
           ...options,
           credentials: "include",
         });
+      },
+      headers() {
+        // Use the current organization context if available
+        if (currentOrgContext) {
+          return {
+            "x-organization-id": currentOrgContext.id,
+          };
+        }
+        return {};
       },
     }),
   ],

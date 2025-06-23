@@ -28,11 +28,11 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Textarea } from "@/components/ui/textarea";
-import { trpc } from "@/utils/trpc";
+import { setCurrentOrgContext, trpc } from "@/utils/trpc";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Copy, Eye, EyeOff, Key, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/$orgSlug/settings/api-keys")({
@@ -55,9 +55,11 @@ function ApiKeysPage() {
     ...trpc.myOrganizations.queryOptions(),
   });
 
+  const currentOrg = organizations?.find((org: any) => org.slug === orgSlug);
+
   const { data: apiKeys, isLoading } = useQuery({
     ...trpc.listApiKeys.queryOptions(),
-    enabled: !!orgSlug,
+    enabled: !!currentOrg?.id,
   });
 
   const createApiKeyMutation = useMutation({
@@ -90,7 +92,11 @@ function ApiKeysPage() {
     },
   });
 
-  const currentOrg = organizations?.find((org: any) => org.slug === orgSlug);
+  useEffect(() => {
+    if (currentOrg) {
+      setCurrentOrgContext(currentOrg);
+    }
+  }, [currentOrg]);
 
   if (!currentOrg) {
     return <div>Organization not found</div>;
@@ -114,7 +120,9 @@ function ApiKeysPage() {
         `Are you sure you want to revoke the API key "${keyName}"? This action cannot be undone.`
       )
     ) {
-      revokeApiKeyMutation.mutate({ keyId });
+      revokeApiKeyMutation.mutate({
+        keyId,
+      });
     }
   };
 

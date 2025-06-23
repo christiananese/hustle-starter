@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import { apiKey, db, organization, user } from "../db";
@@ -134,7 +134,7 @@ export const appRouter = router({
           eq(apiKey.isActive, "true")
         )
       )
-      .orderBy(apiKey.createdAt);
+      .orderBy(desc(apiKey.createdAt));
 
     return keys.map((key) => ({
       ...key,
