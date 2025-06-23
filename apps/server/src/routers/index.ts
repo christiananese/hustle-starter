@@ -1,11 +1,13 @@
 import { and, desc, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { z } from "zod";
-import { apiKey, db, organization, user } from "../db";
+import { apiKey, db, organization, organizationUser, user } from "../db";
 import { createUserWithOrganization, getUserOrganizations } from "../db/seed";
 import { generateApiKey, maskApiKey } from "../lib/api-keys";
 import {
+  adminProcedure,
   orgProcedure,
+  ownerProcedure,
   protectedProcedure,
   publicProcedure,
   router,
@@ -103,6 +105,145 @@ export const appRouter = router({
       return newOrg;
     }),
 
+  // Update organization settings - requires admin role
+  updateOrganization: adminProcedure
+    .input(
+      z.object({
+        name: z.string().min(1).optional(),
+        description: z.string().optional(),
+        logo: z.string().url().optional(),
+        website: z.string().url().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const [updatedOrg] = await db
+        .update(organization)
+        .set({
+          ...input,
+          updatedAt: new Date(),
+        })
+        .where(eq(organization.id, ctx.organizationId))
+        .returning({
+          id: organization.id,
+          name: organization.name,
+          slug: organization.slug,
+          description: organization.description,
+          logo: organization.logo,
+          website: organization.website,
+          updatedAt: organization.updatedAt,
+        });
+
+      return updatedOrg;
+    }),
+
+  // Delete organization - requires owner role
+  deleteOrganization: ownerProcedure.mutation(async ({ ctx }) => {
+    // Delete the organization (cascade will handle related records)
+    await db
+      .delete(organization)
+      .where(eq(organization.id, ctx.organizationId));
+
+    return { success: true };
+  }),
+
+  // Organization User Management
+  listOrganizationUsers: orgProcedure.query(async ({ ctx }) => {
+    const users = await db
+      .select({
+        id: organizationUser.id,
+        userId: organizationUser.userId,
+        role: organizationUser.role,
+        joinedAt: organizationUser.joinedAt,
+        invitedAt: organizationUser.invitedAt,
+        userName: user.name,
+        userEmail: user.email,
+        userImage: user.image,
+      })
+      .from(organizationUser)
+      .innerJoin(user, eq(organizationUser.userId, user.id))
+      .where(eq(organizationUser.organizationId, ctx.organizationId))
+      .orderBy(organizationUser.createdAt);
+
+    return users;
+  }),
+
+  updateUserRole: adminProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        role: z.enum(["admin", "member", "viewer"]),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Prevent changing owner role
+      const [currentMembership] = await db
+        .select({ role: organizationUser.role })
+        .from(organizationUser)
+        .where(
+          and(
+            eq(organizationUser.userId, input.userId),
+            eq(organizationUser.organizationId, ctx.organizationId)
+          )
+        );
+
+      if (currentMembership?.role === "owner") {
+        throw new Error("Cannot change owner role");
+      }
+
+      const [updatedUser] = await db
+        .update(organizationUser)
+        .set({
+          role: input.role,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(organizationUser.userId, input.userId),
+            eq(organizationUser.organizationId, ctx.organizationId)
+          )
+        )
+        .returning({
+          id: organizationUser.id,
+          role: organizationUser.role,
+        });
+
+      return updatedUser;
+    }),
+
+  removeUserFromOrganization: adminProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Prevent removing owner
+      const [membership] = await db
+        .select({ role: organizationUser.role })
+        .from(organizationUser)
+        .where(
+          and(
+            eq(organizationUser.userId, input.userId),
+            eq(organizationUser.organizationId, ctx.organizationId)
+          )
+        );
+
+      if (membership?.role === "owner") {
+        throw new Error("Cannot remove organization owner");
+      }
+
+      await db
+        .delete(organizationUser)
+        .where(
+          and(
+            eq(organizationUser.userId, input.userId),
+            eq(organizationUser.organizationId, ctx.organizationId)
+          )
+        );
+
+      return { success: true };
+    }),
+
   // Organization-scoped operations (example)
   orgData: orgProcedure.query(({ ctx }) => {
     return {
@@ -142,7 +283,7 @@ export const appRouter = router({
     }));
   }),
 
-  createApiKey: orgProcedure
+  createApiKey: adminProcedure
     .input(
       z.object({
         name: z.string().min(1, "Name is required"),
@@ -189,7 +330,7 @@ export const appRouter = router({
       };
     }),
 
-  revokeApiKey: orgProcedure
+  revokeApiKey: adminProcedure
     .input(
       z.object({
         keyId: z.string(),

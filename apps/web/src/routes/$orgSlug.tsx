@@ -1,5 +1,4 @@
 import { AppSidebar } from "@/components/app-sidebar";
-import Header from "@/components/header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { authClient } from "@/lib/auth-client";
 import { trpc } from "@/utils/trpc";
@@ -60,7 +59,6 @@ function OrganizationLayout() {
     <SidebarProvider>
       <AppSidebar currentOrgSlug={orgSlug} />
       <SidebarInset>
-        <Header />
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
           <Outlet />
         </div>

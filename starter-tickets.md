@@ -35,7 +35,7 @@
 - [x] Use `better-auth` to manage sessions
 - [x] Store current org in session or header
 - [x] Check membership in TRPC middleware
-- [ ] Implement `requireRole('admin')` guard
+- [x] ✅ Implement `requireRole('admin')` guard
 - [x] Add frontend context to hold `currentOrg` and `role`
 
 ---
@@ -66,8 +66,8 @@
 
 ### ✅ Backend
 
-- [ ] Route to generate + store hashed key
-- [ ] Route to revoke key
+- [x] ✅ Route to generate + store hashed key
+- [x] ✅ Route to revoke key
 - [ ] Middleware to extract API key from `Authorization: Bearer ...`
 - [ ] Validate API key and attach `orgId` context
 - [ ] Add optional `requireApiKey()` guard for external-facing routes
@@ -94,9 +94,9 @@
 - [ ] Create routers:
   - [x] `auth` – login, logout
   - [x] `org` – create, update, switch
-  - [ ] `orgUser` – list users, change role
+  - [x] ✅ `orgUser` – list users, change role
   - [ ] `invite` – invite + accept
-  - [ ] `apiKeys` – create, revoke, list
+  - [x] ✅ `apiKeys` – create, revoke, list
   - [ ] `billing` – create checkout session, get status
 
 ---
@@ -114,17 +114,17 @@
 - [x] `/auth` – login/signup pages
 - [x] `/dashboard` – org dashboard
 - [x] `/organization` – org settings
-- [x] `/organization/users` – manage users
+- [x] ✅ `/organization/users` – manage users
 - [x] `/organization/invites` – pending invites
 - [x] `/organization/billing` – Stripe billing
-- [x] `/api-keys` – list, revoke, create keys
+- [x] ✅ `/api-keys` – list, revoke, create keys
 
 ### 🧩 Components
 
 - [x] `OrgSwitcher`
-- [x] `RoleBadge`
+- [x] ✅ `RoleBadge`
 - [x] `InviteUserForm`
-- [x] `ApiKeyList`
+- [x] ✅ `ApiKeyList`
 - [ ] `SubscriptionStatusBadge`
 
 ---

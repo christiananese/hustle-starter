@@ -57,6 +57,16 @@ function ApiKeysPage() {
 
   const currentOrg = organizations?.find((org: any) => org.slug === orgSlug);
 
+  // Set current organization context for TRPC headers
+  useEffect(() => {
+    if (currentOrg) {
+      setCurrentOrgContext({ id: currentOrg.id, slug: currentOrg.slug });
+    }
+    return () => {
+      setCurrentOrgContext(null);
+    };
+  }, [currentOrg]);
+
   const { data: apiKeys, isLoading } = useQuery({
     ...trpc.listApiKeys.queryOptions(),
     enabled: !!currentOrg?.id,
@@ -102,9 +112,18 @@ function ApiKeysPage() {
     return <div>Organization not found</div>;
   }
 
+  const currentUserRole = currentOrg.role;
+  const canManageApiKeys =
+    currentUserRole === "admin" || currentUserRole === "owner";
+
   const handleCreateApiKey = () => {
     if (!newKeyName.trim()) {
       toast.error("Please enter a name for the API key");
+      return;
+    }
+
+    if (!canManageApiKeys) {
+      toast.error("You don't have permission to create API keys");
       return;
     }
 
@@ -115,6 +134,11 @@ function ApiKeysPage() {
   };
 
   const handleRevokeApiKey = (keyId: string, keyName: string) => {
+    if (!canManageApiKeys) {
+      toast.error("You don't have permission to revoke API keys");
+      return;
+    }
+
     if (
       confirm(
         `Are you sure you want to revoke the API key "${keyName}"? This action cannot be undone.`
@@ -177,59 +201,61 @@ function ApiKeysPage() {
               Manage API keys for your organization's integrations.
             </p>
           </div>
-          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Create API Key
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create API Key</DialogTitle>
-                <DialogDescription>
-                  Create a new API key for your organization. Make sure to copy
-                  it somewhere safe as you won't be able to see it again.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="name">Name</Label>
-                  <Input
-                    id="name"
-                    placeholder="e.g., Production API"
-                    value={newKeyName}
-                    onChange={(e) => setNewKeyName(e.target.value)}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="description">Description (optional)</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="What will this API key be used for?"
-                    value={newKeyDescription}
-                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                      setNewKeyDescription(e.target.value)
-                    }
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowCreateDialog(false)}
-                >
-                  Cancel
+          {canManageApiKeys && (
+            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create API Key
                 </Button>
-                <Button
-                  onClick={handleCreateApiKey}
-                  disabled={createApiKeyMutation.isPending}
-                >
-                  {createApiKeyMutation.isPending ? "Creating..." : "Create"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create API Key</DialogTitle>
+                  <DialogDescription>
+                    Create a new API key for your organization. Make sure to
+                    copy it somewhere safe as you won't be able to see it again.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="name">Name</Label>
+                    <Input
+                      id="name"
+                      placeholder="e.g., Production API"
+                      value={newKeyName}
+                      onChange={(e) => setNewKeyName(e.target.value)}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="description">Description (optional)</Label>
+                    <Textarea
+                      id="description"
+                      placeholder="What will this API key be used for?"
+                      value={newKeyDescription}
+                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                        setNewKeyDescription(e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowCreateDialog(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleCreateApiKey}
+                    disabled={createApiKeyMutation.isPending}
+                  >
+                    {createApiKeyMutation.isPending ? "Creating..." : "Create"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
 
         {/* Show created key dialog */}
@@ -339,15 +365,17 @@ function ApiKeysPage() {
                         )}
                       </div>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRevokeApiKey(key.id, key.name)}
-                      disabled={revokeApiKeyMutation.isPending}
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Revoke
-                    </Button>
+                    {canManageApiKeys && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleRevokeApiKey(key.id, key.name)}
+                        disabled={revokeApiKeyMutation.isPending}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Revoke
+                      </Button>
+                    )}
                   </div>
                 ))}
               </div>
