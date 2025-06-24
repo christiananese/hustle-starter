@@ -90,7 +90,7 @@ export const appRouter = router({
       }
 
       // Create organization with subscription
-      const result = await createUserWithOrganization({
+      await createUserWithOrganization({
         userId: ctx.session.user.id,
         userName: ctx.session.user.name || "User",
         userEmail: ctx.session.user.email,
@@ -198,7 +198,8 @@ export const appRouter = router({
         throw new Error("Cannot change owner role");
       }
 
-      const [updatedUser] = await db
+      // Update role
+      const [updatedMember] = await db
         .update(organizationUser)
         .set({
           role: input.role,
@@ -215,18 +216,14 @@ export const appRouter = router({
           role: organizationUser.role,
         });
 
-      return updatedUser;
+      return updatedMember;
     }),
 
   removeUserFromOrganization: adminProcedure
-    .input(
-      z.object({
-        userId: z.string(),
-      })
-    )
+    .input(z.object({ userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       // Prevent removing owner
-      const [membership] = await db
+      const [currentMembership] = await db
         .select({ role: organizationUser.role })
         .from(organizationUser)
         .where(
@@ -236,18 +233,24 @@ export const appRouter = router({
           )
         );
 
-      if (membership?.role === "owner") {
+      if (currentMembership?.role === "owner") {
         throw new Error("Cannot remove organization owner");
       }
 
-      await db
+      // Remove user
+      const result = await db
         .delete(organizationUser)
         .where(
           and(
             eq(organizationUser.userId, input.userId),
             eq(organizationUser.organizationId, ctx.organizationId)
           )
-        );
+        )
+        .returning({ id: organizationUser.id });
+
+      if (!result.length) {
+        throw new Error("User not found in organization");
+      }
 
       return { success: true };
     }),

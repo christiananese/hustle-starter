@@ -49,7 +49,6 @@
     "sonner": "^1.7.4",
     "tailwind-merge": "^2.6.0",
     "tw-animate-css": "^1.2.5",
-    "zod": "^3.25.16",
-    "@radix-ui/react-progress": "^1.2.0"
+    "zod": "^3.25.16"
   }
 }
