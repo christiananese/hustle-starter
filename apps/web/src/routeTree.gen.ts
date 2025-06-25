@@ -17,6 +17,7 @@ import { Route as OrgSlugIndexRouteImport } from './routes/$orgSlug/index'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AuthAcceptInviteRouteImport } from './routes/auth/accept-invite'
+import { Route as OrgSlugGetStartedRouteImport } from './routes/$orgSlug/get-started'
 import { Route as OrgSlugSettingsIndexRouteImport } from './routes/$orgSlug/settings/index'
 import { Route as OrgSlugSettingsMembersRouteImport } from './routes/$orgSlug/settings/members'
 import { Route as OrgSlugSettingsInvitesRouteImport } from './routes/$orgSlug/settings/invites'
@@ -63,6 +64,11 @@ const AuthAcceptInviteRoute = AuthAcceptInviteRouteImport.update({
   path: '/auth/accept-invite',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OrgSlugGetStartedRoute = OrgSlugGetStartedRouteImport.update({
+  id: '/get-started',
+  path: '/get-started',
+  getParentRoute: () => OrgSlugRoute,
+} as any)
 const OrgSlugSettingsIndexRoute = OrgSlugSettingsIndexRouteImport.update({
   id: '/settings/',
   path: '/settings/',
@@ -94,6 +100,7 @@ export interface FileRoutesByFullPath {
   '/$orgSlug': typeof OrgSlugRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/settings': typeof SettingsRoute
+  '/$orgSlug/get-started': typeof OrgSlugGetStartedRoute
   '/auth/accept-invite': typeof AuthAcceptInviteRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
@@ -108,6 +115,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/settings': typeof SettingsRoute
+  '/$orgSlug/get-started': typeof OrgSlugGetStartedRoute
   '/auth/accept-invite': typeof AuthAcceptInviteRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/$orgSlug': typeof OrgSlugRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/settings': typeof SettingsRoute
+  '/$orgSlug/get-started': typeof OrgSlugGetStartedRoute
   '/auth/accept-invite': typeof AuthAcceptInviteRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
@@ -141,6 +150,7 @@ export interface FileRouteTypes {
     | '/$orgSlug'
     | '/dashboard'
     | '/settings'
+    | '/$orgSlug/get-started'
     | '/auth/accept-invite'
     | '/auth/login'
     | '/auth/signup'
@@ -155,6 +165,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/settings'
+    | '/$orgSlug/get-started'
     | '/auth/accept-invite'
     | '/auth/login'
     | '/auth/signup'
@@ -170,6 +181,7 @@ export interface FileRouteTypes {
     | '/$orgSlug'
     | '/dashboard'
     | '/settings'
+    | '/$orgSlug/get-started'
     | '/auth/accept-invite'
     | '/auth/login'
     | '/auth/signup'
@@ -249,6 +261,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthAcceptInviteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$orgSlug/get-started': {
+      id: '/$orgSlug/get-started'
+      path: '/get-started'
+      fullPath: '/$orgSlug/get-started'
+      preLoaderRoute: typeof OrgSlugGetStartedRouteImport
+      parentRoute: typeof OrgSlugRoute
+    }
     '/$orgSlug/settings/': {
       id: '/$orgSlug/settings/'
       path: '/settings'
@@ -288,6 +307,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface OrgSlugRouteChildren {
+  OrgSlugGetStartedRoute: typeof OrgSlugGetStartedRoute
   OrgSlugIndexRoute: typeof OrgSlugIndexRoute
   OrgSlugSettingsApiKeysRoute: typeof OrgSlugSettingsApiKeysRoute
   OrgSlugSettingsBillingRoute: typeof OrgSlugSettingsBillingRoute
@@ -297,6 +317,7 @@ interface OrgSlugRouteChildren {
 }
 
 const OrgSlugRouteChildren: OrgSlugRouteChildren = {
+  OrgSlugGetStartedRoute: OrgSlugGetStartedRoute,
   OrgSlugIndexRoute: OrgSlugIndexRoute,
   OrgSlugSettingsApiKeysRoute: OrgSlugSettingsApiKeysRoute,
   OrgSlugSettingsBillingRoute: OrgSlugSettingsBillingRoute,
