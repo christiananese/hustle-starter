@@ -24,6 +24,7 @@ import {
 export const appRouter = router({
   // Health check
   healthCheck: publicProcedure.query(() => {
+    console.log("HEALTH CHECK");
     return "OK";
   }),
 

@@ -9,12 +9,16 @@ import { appRouter } from "./routers/index";
 import { v1Api } from "./routes/api/v1";
 
 const app = new Hono();
-
+console.log(process.env.NODE_ENV);
 app.use(logger());
 app.use(
   "/*",
   cors({
-    origin: process.env.CORS_ORIGIN || "",
+    origin: [
+      process.env.CORS_ORIGIN || "http://localhost:3001", // Web app
+      "http://localhost:8081", // Native app
+      "exp://localhost:8081", // Expo scheme
+    ],
     allowMethods: ["GET", "POST", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization", "x-organization-id"],
     credentials: true,

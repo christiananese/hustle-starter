@@ -1,5 +1,6 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { UpgradeCallout } from "@/components/upgrade-callout";
 import { authClient } from "@/lib/auth-client";
 import { trpc } from "@/utils/trpc";
 import { useQuery } from "@tanstack/react-query";
@@ -63,6 +64,8 @@ function OrganizationLayout() {
           <Outlet />
         </div>
       </SidebarInset>
+      {/* Global Upgrade Callout */}
+      <UpgradeCallout planTier={currentOrg.planTier} orgId={currentOrg.id} />
     </SidebarProvider>
   );
 }
